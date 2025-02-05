@@ -1,152 +1,103 @@
-# **STEDI Human Balance Analytics – README.md** 🚀  
+# 🚀 STEDI Human Balance Analytics
 
-## **📌 Introduction**  
-STEDI is developing a **human balance training platform** using **IoT sensors and Machine Learning**.  
-This project aims to collect, transform, and analyze data from the **STEDI Step Trainer**, a device that monitors user movements.  
+![STEDI Logo](https://your-image-url.com/stedi-logo.png)
 
-This **AWS-based ETL pipeline** allows STEDI to:  
-✅ **Extract** IoT sensor data and store it in an **AWS S3 Data Lake**.  
-✅ **Transform** and clean the data using **AWS Glue**.  
-✅ **Load** the data into a **Curated Zone optimized for Machine Learning**.  
-✅ **Analyze the data** using AWS Athena to detect patterns in balance training.  
+## 📌 Project Overview
+STEDI is a **human balance analytics project** that uses **sensor data** from **Step Trainers** and **mobile devices** to improve human balance detection with **machine learning**. The goal is to process **raw data from S3**, transform it into a **structured Lakehouse architecture**, and **prepare it for model training**.
 
-📌 **Technologies used:**  
-🔹 AWS Glue (ETL)  
-🔹 AWS S3 (Data Lake)  
-🔹 AWS Athena (Query engine)  
-🔹 AWS IAM (Security)  
-🔹 Apache Spark (Big Data processing)  
+This project **implements an ETL pipeline** in **AWS Glue, S3, Athena, and Redshift**, ensuring **GDPR compliance** and **data privacy protections**.
 
 ---
 
-## **📌 Data Lakehouse Architecture**
-The project follows a **Lakehouse Architecture**, combining the flexibility of a **Data Lake** with the performance of a **Data Warehouse**.
+## 🏗 **Project Architecture**
+```mermaid
+graph TD
+    A[S3 Raw Data] -->|Glue Crawler| B(AWS Glue Data Catalog)
+    B -->|ETL Jobs| C[Trusted Zone]
+    C -->|Data Filtering & Cleaning| D[Curated Zone]
+    D -->|Feature Engineering| E[Machine Learning Model]
+    E -->|Athena Queries| F[Dashboard & Analytics]
+```
 
-📍 **Pipeline Stages:**
-1. **Landing Zone** 🏗️ – Raw IoT data ingestion.  
-2. **Trusted Zone** 🔎 – Filtered and validated data.  
-3. **Curated Zone** 📊 – Optimized data ready for Machine Learning.  
+📌 Key Components:
 
----
+    Landing Zone: Raw JSON sensor data from S3.
+    Trusted Zone: Cleaned & filtered data.
+    Curated Zone: Feature-engineered data for machine learning.
+    Machine Learning: Aggregated accelerometer & step trainer data.
 
-## **📌 Database Schema**
-The dataset consists of three main tables, structured into different **processing zones**:
+🎯 Objectives
 
-### **1️⃣ Landing Zone (Raw Data)**
-This data is **ingested from IoT devices** and stored in JSON format on S3.  
-| Table | Description |
-|---------|------------|
-| `customer_landing` | User data (registration, permissions, contact details) |
-| `accelerometer_landing` | Mobile app sensor data (X, Y, Z) |
-| `step_trainer_landing` | Step Trainer device movement data |
+✔️ Build a Lakehouse architecture using AWS Glue
+✔️ Use Athena to analyze structured data
+✔️ Create GDPR-compliant datasets by removing PII
+✔️ Ensure research consent before including customer data
+✔️ Join Step Trainer & Accelerometer data for ML model training
+📂 Project Deliverables
+📜 1. AWS Glue Data Catalog Tables
+Step	SQL File	Table Name	Data Location
+✅ 1	customer_landing.sql	stedi.customer_landing	s3://stedi-raw-data/customer_landing/
+✅ 2	accelerometer_landing.sql	stedi.accelerometer_landing	s3://stedi-raw-data/accelerometer_landing/
+✅ 3	step_trainer_landing.sql	stedi.step_trainer_landing	s3://stedi-raw-data/step_trainer_landing/
+✅ 4	customer_trusted.sql	stedi.customer_trusted	s3://stedi-trusted-data/customer_trusted/
+✅ 5	accelerometer_trusted.sql	stedi.accelerometer_trusted	s3://stedi-trusted-data/accelerometer_trusted/
+✅ 6	step_trainer_trusted.sql	stedi.step_trainer_trusted	s3://stedi-trusted-data/step_trainer_trusted/
+✅ 7	customer_curated.sql	stedi.customer_curated	s3://stedi-curated-data/customer_curated/
+✅ 8	machine_learning_curated.sql	stedi.machine_learning_curated	s3://stedi-curated-data/machine_learning_curated/
+📝 2. AWS Glue ETL Jobs
+Step	Python Script	Purpose
+✅ 1	customer_landing_to_trusted.py	Cleans raw customer data & removes non-consented users
+✅ 2	accelerometer_landing_to_trusted.py	Filters accelerometer data for research-compliant users
+✅ 3	step_trainer_landing_to_trusted.py	Filters Step Trainer readings for valid users
+✅ 4	customer_trusted_to_curated.py	Removes PII (GDPR compliance) from customer records
+✅ 5	machine_learning_curated.py	Joins accelerometer & step trainer data for ML
+🔍 3. Data Privacy & GDPR Compliance
 
----
+    Anonymization (gdpr_anonymization.sql): Removes email, phone, and personal data
+    Research Consent Filter (research_consent_filter.sql): Removes pre-consent sensor data
 
-### **2️⃣ Trusted Zone (Filtered Data)**
-Data is **cleaned and filtered**, keeping only users who have **agreed to share their data for research**.  
-| Table | Description |
-|---------|------------|
-| `customer_trusted` | Users with research consent |
-| `accelerometer_trusted` | Sensor data from authorized users |
-| `step_trainer_trusted` | Validated Step Trainer data |
+SELECT * FROM stedi.customer_anonymized LIMIT 10;
 
----
+📌 Expected output: No email, phone, or customername fields.
+📊 4. Required Athena Query Screenshots
+Step	Screenshot Name	Query Description	Expected Rows
+✅ 1	customer_landing_query.png	Count of raw customers	956
+✅ 2	accelerometer_landing_query.png	Count of raw accelerometer readings	81,273
+✅ 3	step_trainer_landing_query.png	Count of raw step trainer readings	28,680
+✅ 4	customer_trusted_query.png	Customers who gave research consent	482
+✅ 5	accelerometer_trusted_query.png	Research-approved accelerometer readings	40,981 or 32,025
+✅ 6	step_trainer_trusted_query.png	Research-approved step trainer readings	14,460
+✅ 7	customer_curated_query.png	GDPR-compliant customers	482 or 464
+✅ 8	machine_learning_curated_query.png	ML training dataset count	43,681 or 34,437
+🛠 Setup & Execution
+🔹 1. Install Dependencies
 
-### **3️⃣ Curated Zone (Optimized for ML)**
-Data is **aggregated and prepared** for advanced analytics.  
-| Table | Description |
-|---------|------------|
-| `customer_curated` | Only users with accelerometer data |
-| `machine_learning_curated` | Merged Step Trainer and Accelerometer data for ML |
+pip install -r requirements.txt
 
----
+🔹 2. Deploy AWS Glue Jobs
 
-## **📌 ETL Pipeline**
-📌 **AWS Glue ETL Process Steps:**
+aws glue create-job --name customer_landing_to_trusted --role AWSGlueServiceRole --script-location s3://your-glue-scripts/customer_landing_to_trusted.py
+aws glue start-job-run --job-name customer_landing_to_trusted
 
-1️⃣ **Extract (Landing Zone)**
-   - Data is ingested from **IoT devices** and stored in **S3 as JSON**.  
-   - AWS Glue **crawlers create Athena tables** from raw files.  
+Repeat for all ETL scripts.
+🔹 3. Run Athena Queries
 
-2️⃣ **Transform (Trusted Zone)**
-   - **Filtering**: Keep only users who have research consent.  
-   - **Joining**: Link users with their sensor data.  
+    Open AWS Athena
+    Select stedi database
+    Run each query (refer to queries.sql file)
+    Take screenshots
 
-3️⃣ **Load (Curated Zone)**
-   - **Merge** Step Trainer & Accelerometer data.  
-   - **Convert to Parquet** for optimized analytics.  
+🚀 Improvements & Enhancements
 
----
+✔️ Step Trainer & Accelerometer data now synchronized
+✔️ Research Consent Validation added (research_consent_filter.sql)
+✔️ GDPR-Compliant Anonymization applied (gdpr_anonymization.sql)
+✔️ AWS Glue & Redshift optimizations for performance
+📚 Resources
 
-## **📌 Repository Structure**
-📂 `stedi_project/`  
-├── 📜 `README.md` (This file 📄)  
-├── 📂 `sql/` (SQL scripts for Athena tables)  
-│   ├── `customer_landing.sql`  
-│   ├── `accelerometer_landing.sql`  
-│   ├── `step_trainer_landing.sql`  
-│   ├── `customer_trusted.sql`  
-│   ├── `machine_learning_curated.sql`  
-│   └── `customer_curated.sql`  
-├── 📂 `glue_jobs/` (AWS Glue ETL scripts)  
-│   ├── `customer_landing_to_trusted.py`  
-│   ├── `accelerometer_landing_to_trusted.py`  
-│   ├── `step_trainer_landing_to_trusted.py`  
-│   ├── `customer_trusted_to_curated.py`  
-│   ├── `machine_learning_curated.py`  
-│   └── `glue_helpers.py` (Helper functions)  
-├── 📂 `screenshots/` (AWS Athena query results)  
-│   ├── `customer_landing.png`  
-│   ├── `customer_trusted.png`  
-│   ├── `customer_curated.png`  
-│   ├── `machine_learning_curated.png`  
-│   └── `glue_jobs_execution.png`  
-└── 📜 `report_stedi_project.pdf` (Final report 📊)  
+📌 AWS Services Used:
 
----
-
-## **📌 How to Run the Project**
-### **🔹 1️⃣ AWS Setup**
-1. **Upload raw data to S3**:  
-   - `customer_landing/`  
-   - `accelerometer_landing/`  
-   - `step_trainer_landing/`  
-
-2. **Create Athena tables** using SQL scripts.
-
-3. **Configure AWS Glue**:
-   - **Create IAM Role** (`AWSGlueServiceRole-STEDI`) with S3 & Glue permissions.
-   - **Set up AWS Glue Crawlers**.
-   - **Create and run AWS Glue Jobs**.
-
-4. **Validate data in Athena** using SQL queries.
-
----
-
-## **📌 Example AWS Athena Queries**
-### 🔹 **1️⃣ Top Users with the Most Accelerometer Readings**
-```sql
-SELECT user, COUNT(*) AS num_readings
-FROM stedi.machine_learning_curated
-GROUP BY user
-ORDER BY num_readings DESC
-LIMIT 10;
-
-📌 Insight: Identifies users with the highest activity levels.
-🔹 2️⃣ Average Distance Measured by the Step Trainer
-
-SELECT AVG(distanceFromObject) AS avg_distance
-FROM stedi.machine_learning_curated;
-
-📌 Insight: Helps analyze balance stability across users.
-🔹 3️⃣ Users with the Most Extreme Acceleration Changes
-
-SELECT user, MAX(x) - MIN(x) AS variation_x, 
-              MAX(y) - MIN(y) AS variation_y, 
-              MAX(z) - MIN(z) AS variation_z
-FROM stedi.machine_learning_curated
-GROUP BY user
-ORDER BY variation_x DESC
-LIMIT 5;
-
-📌 Insight: Detects users with the highest movement variability.
+    🏗 AWS Glue – ETL pipeline
+    🏗 AWS S3 – Data Lake storage
+    🏗 AWS Athena – SQL querying
+    🏗 AWS Redshift – Analytics database
