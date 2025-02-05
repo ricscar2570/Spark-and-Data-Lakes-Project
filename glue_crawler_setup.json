@@ -1,6 +1,6 @@
 {
     "Name": "stedi_crawler",
-    "Role": "arn:aws:iam::<your-aws-account-id>:role/AWSGlueServiceRole",
+    "Role": "arn:aws:iam::571670270030:role/AWSGlueServiceRole",
     "DatabaseName": "stedi",
     "Targets": {
         "S3Targets": [
