@@ -26,7 +26,7 @@ graph TD
     Curated Zone: Feature-engineered data for machine learning.
     Machine Learning: Aggregated accelerometer & step trainer data.
 
-🎯 Objectives
+```🎯 Objectives
 
 ✔️ Build a Lakehouse architecture using AWS Glue
 ✔️ Use Athena to analyze structured data
@@ -51,6 +51,8 @@ Step	Python Script	Purpose
 ✅ 3	step_trainer_landing_to_trusted.py	Filters Step Trainer readings for valid users
 ✅ 4	customer_trusted_to_curated.py	Removes PII (GDPR compliance) from customer records
 ✅ 5	machine_learning_curated.py	Joins accelerometer & step trainer data for ML
+```
+
 🔍 3. Data Privacy & GDPR Compliance
 
     Anonymization (gdpr_anonymization.sql): Removes email, phone, and personal data
