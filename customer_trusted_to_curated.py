@@ -15,12 +15,13 @@ customer_trusted_df = spark.read.parquet(CUSTOMER_TRUSTED_PATH)
 # Read Accelerometer Trusted Data
 accelerometer_trusted_df = spark.read.parquet(ACCELEROMETER_TRUSTED_PATH).select("user").distinct()
 
-# Join with accelerometer users and remove PII
-customer_curated_df = customer_trusted_df.join(accelerometer_trusted_df, customer_trusted_df.email == accelerometer_trusted_df.user, "inner") \
-    .select("serialNumber", "registrationDate", "shareWithResearchAsOfDate")
+# Keep only customers who have accelerometer data
+customer_curated_df = customer_trusted_df.join(accelerometer_trusted_df, customer_trusted_df.email == accelerometer_trusted_df.user, "inner").drop("user")
 
-# Write anonymized data to Curated Zone
+# Write to Curated Zone
 customer_curated_df.write.mode("overwrite").parquet(CURATED_ZONE_PATH)
 
 # Stop Spark Session
 spark.stop()
+
+
