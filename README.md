@@ -33,8 +33,11 @@ graph TD
 ✔️ Create GDPR-compliant datasets by removing PII
 ✔️ Ensure research consent before including customer data
 ✔️ Join Step Trainer & Accelerometer data for ML model training
-📂 Project Deliverables
-📜 1. AWS Glue Data Catalog Tables
+
+```
+
+
+```📜 1. AWS Glue Data Catalog Tables
 Step	SQL File	Table Name	Data Location
 ✅ 1	customer_landing.sql	stedi.customer_landing	s3://stedi-raw-data/customer_landing/
 ✅ 2	accelerometer_landing.sql	stedi.accelerometer_landing	s3://stedi-raw-data/accelerometer_landing/
@@ -44,7 +47,9 @@ Step	SQL File	Table Name	Data Location
 ✅ 6	step_trainer_trusted.sql	stedi.step_trainer_trusted	s3://stedi-trusted-data/step_trainer_trusted/
 ✅ 7	customer_curated.sql	stedi.customer_curated	s3://stedi-curated-data/customer_curated/
 ✅ 8	machine_learning_curated.sql	stedi.machine_learning_curated	s3://stedi-curated-data/machine_learning_curated/
-📝 2. AWS Glue ETL Jobs
+```
+
+```📝 2. AWS Glue ETL Jobs
 Step	Python Script	Purpose
 ✅ 1	customer_landing_to_trusted.py	Cleans raw customer data & removes non-consented users
 ✅ 2	accelerometer_landing_to_trusted.py	Filters accelerometer data for research-compliant users
@@ -71,7 +76,10 @@ Step	Screenshot Name	Query Description	Expected Rows
 ✅ 6	step_trainer_trusted_query.png	Research-approved step trainer readings	14,460
 ✅ 7	customer_curated_query.png	GDPR-compliant customers	482 or 464
 ✅ 8	machine_learning_curated_query.png	ML training dataset count	43,681 or 34,437
-🛠 Setup & Execution
+
+
+# 🛠 Setup & Execution
+
 🔹 1. Install Dependencies
 
 pip install -r requirements.txt
@@ -89,13 +97,14 @@ Repeat for all ETL scripts.
     Run each query (refer to queries.sql file)
     Take screenshots
 
-🚀 Improvements & Enhancements
+# 🚀 Improvements & Enhancements
 
 ✔️ Step Trainer & Accelerometer data now synchronized
 ✔️ Research Consent Validation added (research_consent_filter.sql)
 ✔️ GDPR-Compliant Anonymization applied (gdpr_anonymization.sql)
 ✔️ AWS Glue & Redshift optimizations for performance
-📚 Resources
+
+# 📚 Resources
 
 📌 AWS Services Used:
 
