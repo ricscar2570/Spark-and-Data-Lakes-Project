@@ -1,0 +1,22 @@
+{
+    "Name": "stedi_crawler",
+    "Role": "arn:aws:iam::<your-aws-account-id>:role/AWSGlueServiceRole",
+    "DatabaseName": "stedi",
+    "Targets": {
+        "S3Targets": [
+            {
+                "Path": "s3://stedi-raw-data/"
+            },
+            {
+                "Path": "s3://stedi-trusted-data/"
+            },
+            {
+                "Path": "s3://stedi-curated-data/"
+            }
+        ]
+    },
+    "SchemaChangePolicy": {
+        "UpdateBehavior": "UPDATE_IN_DATABASE",
+        "DeleteBehavior": "LOG"
+    }
+}
