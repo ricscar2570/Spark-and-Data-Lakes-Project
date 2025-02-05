@@ -1,0 +1,31 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetBucketLocation",
+                "s3:ListBucket",
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:DeleteObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::stedi-raw-data/*",
+                "arn:aws:s3:::stedi-trusted-data/*",
+                "arn:aws:s3:::stedi-curated-data/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "glue:*",
+                "athena:*",
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
