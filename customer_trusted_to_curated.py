@@ -15,17 +15,22 @@ customer_trusted_df.printSchema()
 print("📌 Accelerometer Trusted Schema BEFORE Processing:")
 accelerometer_trusted_df.printSchema()
 
-# ✅ Convert `shareWithResearchAsOfDate` to Timestamp if Needed
-if dict(customer_trusted_df.dtypes)["shareWithResearchAsOfDate"] != "timestamp":
+# ✅ Convert `shareWithResearchAsOfDate` to TIMESTAMP if Needed
+if dict(customer_trusted_df.dtypes)["shareWithResearchAsOfDate"] == "bigint":
     customer_trusted_df = customer_trusted_df.withColumn(
-        "shareWithResearchAsOfDate", col("shareWithResearchAsOfDate").cast("timestamp")
+        "shareWithResearchAsOfDate", from_unixtime(col("shareWithResearchAsOfDate") / 1000).cast("timestamp")
     )
 
-# ✅ Convert `timeStamp` to Timestamp if Needed
+# ✅ Convert `timeStamp` to TIMESTAMP if Needed
 if dict(accelerometer_trusted_df.dtypes)["timeStamp"] != "timestamp":
     accelerometer_trusted_df = accelerometer_trusted_df.withColumn(
         "timeStamp", col("timeStamp").cast("timestamp")
     )
+
+# ✅ Convert INT64 fields to STRING format for Athena Compatibility
+for field in ["lastUpdateDate", "registrationDate", "shareWithFriendsAsOfDate", "shareWithPublicAsOfDate"]:
+    if field in dict(customer_trusted_df.dtypes) and dict(customer_trusted_df.dtypes)[field] == "bigint":
+        customer_trusted_df = customer_trusted_df.withColumn(field, from_unixtime(col(field) / 1000).cast("string"))
 
 # ✅ Check Schema After Processing
 print("📌 Customer Trusted Schema AFTER Processing:")
@@ -34,6 +39,7 @@ customer_trusted_df.printSchema()
 print("📌 Accelerometer Trusted Schema AFTER Processing:")
 accelerometer_trusted_df.printSchema()
 
+# ✅ Join and Filter Data
 customer_curated_df = customer_trusted_df.alias("c").join(
     accelerometer_trusted_df.alias("a"),
     col("c.email") == col("a.user"),
