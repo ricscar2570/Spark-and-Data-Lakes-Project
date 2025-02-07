@@ -1,34 +1,54 @@
-import sys
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
 
-# Initialize Spark Session
+# ✅ Initialize Spark Session
 spark = SparkSession.builder.appName("MachineLearningCurated").getOrCreate()
 
-# S3 Paths
-STEP_TRAINER_TRUSTED_PATH = "s3://stedi-trusted-data/step_trainer_trusted/"
-ACCELEROMETER_TRUSTED_PATH = "s3://stedi-trusted-data/accelerometer_trusted/"
-CURATED_ZONE_PATH = "s3://stedi-curated-data/machine_learning_curated/"
+# ✅ Load Step Trainer Trusted Data
+step_trainer_trusted_df = spark.read.parquet("s3://stedi-trusted-data/step_trainer_trusted/")
 
-# Read Trusted Datasets
-step_trainer_df = spark.read.parquet(STEP_TRAINER_TRUSTED_PATH)
-accelerometer_df = spark.read.parquet(ACCELEROMETER_TRUSTED_PATH)
+# ✅ Load Accelerometer Trusted Data
+accelerometer_trusted_df = spark.read.parquet("s3://stedi-trusted-data/accelerometer_trusted/")
 
-# Print columns for debugging
-print("Step Trainer Columns: ", step_trainer_df.columns)
-print("Accelerometer Columns: ", accelerometer_df.columns)
+# 🚀 Debugging: Print Initial Row Counts and Schema
+print(f"✅ Total Step Trainer Trusted Rows: {step_trainer_trusted_df.count()}")
+print(f"✅ Total Accelerometer Trusted Rows: {accelerometer_trusted_df.count()}")
 
-# Ensure correct timestamp column names
-step_trainer_df = step_trainer_df.withColumnRenamed("sensorReadingTime", "timestamp_step")
-accelerometer_df = accelerometer_df.withColumnRenamed("timeStamp", "timestamp_accel")
+print("📌 Step Trainer Trusted Schema:")
+step_trainer_trusted_df.printSchema()
 
-# Perform Join on corrected timestamp columns
-machine_learning_df = step_trainer_df.join(accelerometer_df, step_trainer_df.timestamp_step == accelerometer_df.timestamp_accel, "inner")
+print("📌 Accelerometer Trusted Schema:")
+accelerometer_trusted_df.printSchema()
 
-# Drop duplicate timestamp column
-machine_learning_df = machine_learning_df.drop("timestamp_accel")
+# ✅ Ensure Correct Data Types
+step_trainer_trusted_df = step_trainer_trusted_df.withColumn("sensorReadingTime", col("sensorReadingTime").cast("timestamp"))
+accelerometer_trusted_df = accelerometer_trusted_df.withColumn("timeStamp", col("timeStamp").cast("timestamp"))
 
-# Write to Curated Zone
-machine_learning_df.write.mode("overwrite").parquet(CURATED_ZONE_PATH)
+# 🚀 Verify Min/Max Timestamps Before Joining
+print("📊 Min/Max Timestamps in Step Trainer Trusted:")
+step_trainer_trusted_df.selectExpr("MIN(sensorReadingTime)", "MAX(sensorReadingTime)").show()
 
-# Stop Spark Session
-spark.stop()
+print("📊 Min/Max Timestamps in Accelerometer Trusted:")
+accelerometer_trusted_df.selectExpr("MIN(timeStamp)", "MAX(timeStamp)").show()
+
+# ✅ Perform the INNER JOIN on Sensor Reading Time
+machine_learning_curated_df = step_trainer_trusted_df.alias("s").join(
+    accelerometer_trusted_df.alias("a"),
+    col("s.sensorReadingTime") == col("a.timeStamp"),
+    "inner"
+).select(
+    col("s.sensorReadingTime"),
+    col("s.serialNumber"),
+    col("s.distanceFromObject"),
+    col("a.x"),
+    col("a.y"),
+    col("a.z")
+)  # ✅ Selecting Only Relevant Fields
+
+# 🚀 Debugging: Print Final Row Count After Join
+print(f"✅ Machine Learning Curated Rows: {machine_learning_curated_df.count()}")
+
+# ✅ Save to Curated Zone
+machine_learning_curated_df.write.mode("overwrite").parquet("s3://stedi-curated-data/machine_learning_curated/")
+
+print("🚀 Machine Learning Curated Data Successfully Written!")
