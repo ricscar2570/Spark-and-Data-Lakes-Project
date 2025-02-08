@@ -2,13 +2,21 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col
 
 # ✅ Initialize Spark Session
-spark = SparkSession.builder.appName("StepTrainerTrusted").getOrCreate()
+spark = SparkSession.builder \
+    .appName("StepTrainerTrusted") \
+    .config("spark.sql.catalogImplementation", "hive") \
+    .enableHiveSupport() \
+    .getOrCreate()
 
 # ✅ Load Step Trainer Landing Data
-step_trainer_landing_df = spark.read.option("inferSchema", "true").json("s3://stedi-raw-data/step_trainer/landing/")
+step_trainer_landing_df = spark.read \
+    .option("inferSchema", "true") \
+    .json("s3://stedi-raw-data/step_trainer/landing/")
 
 # ✅ Load Customer Curated Data (Selecting Only `serialNumber`)
-customer_curated_df = spark.read.parquet("s3://stedi-curated-data/customer_curated/").select("serialNumber")
+customer_curated_df = spark.read \
+    .parquet("s3://stedi-curated-data/customer_curated/") \
+    .select("serialNumber")
 
 # ✅ Ensure Correct Data Types
 step_trainer_landing_df = step_trainer_landing_df.withColumn("sensorReadingTime", col("sensorReadingTime").cast("timestamp"))
@@ -33,7 +41,15 @@ step_trainer_trusted_df = step_trainer_landing_df.alias("s").join(
 # 🚀 Debugging: Print Final Row Count After Join
 print(f"✅ Step Trainer Readings AFTER Join with Customers: {step_trainer_trusted_df.count()}")
 
-# ✅ Save to Trusted Zone
-step_trainer_trusted_df.write.mode("overwrite").parquet("s3://stedi-trusted-data/step_trainer_trusted/")
+# ✅ Enable schema evolution in Glue Data Catalog
+step_trainer_trusted_df.write \
+    .mode("overwrite") \
+    .format("parquet") \
+    .option("path", "s3://stedi-trusted-data/step_trainer_trusted/") \
+    .option("mergeSchema", "true") \
+    .saveAsTable("stedi.step_trainer_trusted")
 
 print("🚀 Step Trainer Trusted Data Successfully Written!")
+
+# ✅ Stop Spark Session
+spark.stop()
